@@ -1,0 +1,71 @@
+%Colocar abaixo do código principal
+% Inicialização do tabuleiro com uma peça preta na linha 7, coluna 2
+inicializa_tabuleiro_teste([
+	[⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨],
+	[🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫],
+	[⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨],
+	[🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨],
+	[🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨],
+	[🟨, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨, ⚪],
+	[⚪, ⚫, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨],  % Peça preta na linha 7, coluna 2
+	[🟨, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨, ⚪]
+]).
+
+% Inicialização do tabuleiro com uma peça branca na linha 2, coluna 2
+inicializa_tabuleiro_teste_branca([
+	[⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨],
+	[🟨, 🟨, ⚪, ⚫, 🟨, ⚫, 🟨, ⚫],  % Peça branca na linha 2, coluna 3
+	[⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨],
+	[🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨],
+	[🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨],
+	[🟨, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨, ⚪],
+	[⚪, 🟨, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨],
+	[🟨, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨, ⚪]
+]).
+
+% Inicialização do tabuleiro para testar captura
+inicializa_tabuleiro_teste_captura([
+	[⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨],
+	[🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫],
+	[⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨],
+	[🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨],
+	[🟨, 🟨, 🟨, ⚪, 🟨, 🟨, 🟨, 🟨],  % Peça branca na linha 5, coluna 4
+	[🟨, 🟨, 🟨, 🟨, ⚫, 🟨, 🟨, 🟨],  % Peça preta na linha 6, coluna 5
+	[⚪, 🟨, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨],
+	[🟨, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨, ⚪]
+]).
+
+inicializa_tabuleiro_teste_DAMA__captura([
+	[⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨],
+	[🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫],
+	[⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨],
+	[🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨],
+	[🟨, 🟨, 🟨, ⚪, 🟨, 🟨, 🟨, 🟨],
+	[🟨, 🟨, 🟨, 🟨, ⚪, 🟨, 🟨, 🟨], 
+	[⚪, 🟨, ⚪, 🏴, ⚪, 🟨, ⚪, 🟨],
+	[🟨, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨, ⚪]
+]).
+
+% Loop principal do jogo com tabuleiro de teste
+jogar_teste :-
+	inicializa_tabuleiro_teste(Tabuleiro),
+	jogar(Tabuleiro, ⚫). % Começa com as peças pretas
+
+% Loop principal do jogo com tabuleiro de teste para peça branca
+jogar_teste_branca :-
+	inicializa_tabuleiro_teste_branca(Tabuleiro),
+	jogar(Tabuleiro, ⚪). % Começa com as peças brancas
+
+% Loop principal do jogo com tabuleiro de teste para captura
+
+jogar_teste_captura :-
+	inicializa_tabuleiro_teste_captura(Tabuleiro),
+	jogar(Tabuleiro, ⚫). % Começa com as peças pretas
+
+jogar_teste_captura_branca:-
+	inicializa_tabuleiro_teste_captura(Tabuleiro),
+    jogar(Tabuleiro, ⚪). % Começa com as peças pretas
+
+jogar_teste_DAMA_captura :-
+	inicializa_tabuleiro_teste_DAMA__captura(Tabuleiro),
+	jogar(Tabuleiro, ⚫). % Começa com as peças pretas

@@ -1,0 +1,181 @@
+% Representação do tabuleiro como uma matriz 8x8
+% Cada célula pode conter: vazio (🟨), peça branca (⚪), peça preta (⚫), dama branca (🏳), dama preta (🏴).
+
+% Inicialização do tabuleiro
+inicializa_tabuleiro([
+	[⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨],
+	[🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫],
+	[⚫, 🟨, ⚫, 🟨, ⚫, 🟨, ⚫, 🟨],
+	[🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨],
+	[🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨, 🟨],
+	[🟨, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨, ⚪],
+	[⚪, 🟨, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨],
+	[🟨, ⚪, 🟨, ⚪, 🟨, ⚪, 🟨, ⚪]
+]).
+
+% Função para exibir o tabuleiro
+exibir_linha([]) :- nl.
+exibir_linha([H|T]) :- write(H), write(' '), exibir_linha(T).
+
+exibir_tabuleiro(Tabuleiro) :-
+	nl, write([' ', '1' , ' ', '2',' ', '3' ,' ', '4' ,' ', '5',' ', '6' ,' ', '7' ,' ', '8']), nl,
+	exibir_tabuleiro_aux(Tabuleiro, 1).
+
+exibir_tabuleiro_aux([], _).
+exibir_tabuleiro_aux([H|T], N) :-
+	write(N), write(' '),
+	exibir_linha(H),
+	N1 is N + 1,
+	exibir_tabuleiro_aux(T, N1).
+
+% Verifica se uma célula está vazia
+célula_vazia(Tabuleiro, (Linha, Coluna)) :-
+	nth1(Linha, Tabuleiro, LinhaTab),
+	nth1(Coluna, LinhaTab, 🟨).
+
+% Verifica se uma peça é adversária
+peça_adversária(⚫, ⚪).
+peça_adversária(⚪, ⚫).
+
+% Substitui um valor em uma lista
+substituir_linha([_|Resto], 1, Valor, [Valor|Resto]).
+substituir_linha([H|Resto], Coluna, Valor, [H|NovoResto]) :-
+	Coluna > 1,
+	NovaColuna is Coluna - 1,
+	substituir_linha(Resto, NovaColuna, Valor, NovoResto).
+
+% Substitui um valor no tabuleiro
+substituir([_|Resto], 1, NovaLinha, [NovaLinha|Resto]).
+substituir([H|Resto], Linha, NovaLinha, [H|NovoResto]) :-
+	Linha > 1,
+	NovaLinhaIndex is Linha - 1,
+	substituir(Resto, NovaLinhaIndex, NovaLinha, NovoResto).
+
+% Verifica se uma peça deve ser transformada em dama
+transformar_em_dama((Linha, _), Peça, NovaPeça) :-
+	(Peça = ⚪, Linha = 1 -> NovaPeça = 🏳 ; % Peça branca na linha 1
+ 	Peça = ⚫, Linha = 8 -> NovaPeça = 🏴 ; % Peça preta na linha 8
+ 	NovaPeça = Peça). % Caso contrário, mantém a peça
+
+% Movimento simples (modificado para damas se moverem livremente)
+movimento_simples(Tabuleiro, (LinhaAtual, ColunaAtual), (NovaLinha, NovaColuna), NovoTabuleiro) :-
+    % Obtém a peça que está se movendo
+    nth1(LinhaAtual, Tabuleiro, LinhaTab),
+    nth1(ColunaAtual, LinhaTab, Peça),
+    % Verifica se o movimento é válido
+    movimento_valido(Peça, LinhaAtual, NovaLinha, ColunaAtual, NovaColuna),
+    % Verifica se o caminho está livre
+    caminho_livre(Tabuleiro, (LinhaAtual, ColunaAtual), (NovaLinha, NovaColuna)),
+    % Verifica se a nova posição está dentro do tabuleiro
+    between(1, 8, NovaLinha), between(1, 8, NovaColuna),
+    % Verifica se a nova posição está vazia
+    célula_vazia(Tabuleiro, (NovaLinha, NovaColuna)),
+    % Obtém a peça que está se movendo
+    nth1(LinhaAtual, Tabuleiro, LinhaTab),
+    nth1(ColunaAtual, LinhaTab, Peça),
+    % Verifica se a peça está se movendo corretamente
+    movimento_valido(Peça, LinhaAtual, NovaLinha, ColunaAtual, NovaColuna),
+    % Verifica se o caminho está livre
+    caminho_livre(Tabuleiro, (LinhaAtual, ColunaAtual), (NovaLinha, NovaColuna)),
+    % Verifica se a peça deve ser transformada em dama
+	transformar_em_dama((NovaLinha, NovaColuna), Peça, NovaPeça),
+    % Atualiza o tabuleiro
+    substituir_linha(LinhaTab, ColunaAtual, 🟨, NovaLinhaTab),
+    substituir(Tabuleiro, LinhaAtual, NovaLinhaTab, TabuleiroTemp),
+    nth1(NovaLinha, TabuleiroTemp, LinhaTabNova),
+    substituir_linha(LinhaTabNova, NovaColuna, NovaPeça, NovaLinhaTabNova),
+    substituir(TabuleiroTemp, NovaLinha, NovaLinhaTabNova, NovoTabuleiro).
+
+% Define regras de movimento para cada tipo de peça
+movimento_valido(⚪, LinhaAtual, NovaLinha, _, _) :- NovaLinha is LinhaAtual - 1.
+movimento_valido(⚫, LinhaAtual, NovaLinha, _, _) :- NovaLinha is LinhaAtual + 1.
+movimento_valido(🏳, LinhaAtual, NovaLinha, ColunaAtual, NovaColuna) :-
+    abs(NovaLinha - LinhaAtual) =:= abs(NovaColuna - ColunaAtual).
+movimento_valido(🏴, LinhaAtual, NovaLinha, ColunaAtual, NovaColuna) :-
+    abs(NovaLinha - LinhaAtual) =:= abs(NovaColuna - ColunaAtual).  % Branco só sobe
+movimento_valido(⚫, LinhaAtual, NovaLinha, _, _) :- NovaLinha is LinhaAtual + 1.  % Preto só desce
+movimento_valido(🏳, LinhaAtual, NovaLinha, ColunaAtual, NovaColuna) :-
+    abs(NovaLinha - LinhaAtual) =:= abs(NovaColuna - ColunaAtual). % Movimento diagonal
+movimento_valido(🏴, LinhaAtual, NovaLinha, ColunaAtual, NovaColuna) :-
+    abs(NovaLinha - LinhaAtual) =:= abs(NovaColuna - ColunaAtual). % Movimento diagonal
+
+% Verifica se o caminho entre (LinhaAtual, ColunaAtual) e (NovaLinha, NovaColuna) está livre
+caminho_livre(Tabuleiro, (LinhaAtual, ColunaAtual), (NovaLinha, NovaColuna)) :-
+    LinhaDif is sign(NovaLinha - LinhaAtual),
+    ColunaDif is sign(NovaColuna - ColunaAtual),
+    caminho_vazio(Tabuleiro, LinhaAtual, ColunaAtual, LinhaDif, ColunaDif, NovaLinha, NovaColuna),
+    LinhaDif is sign(NovaLinha - LinhaAtual),
+    ColunaDif is sign(NovaColuna - ColunaAtual),
+    caminho_vazio(Tabuleiro, LinhaAtual, ColunaAtual, LinhaDif, ColunaDif, NovaLinha, NovaColuna).
+
+caminho_vazio(_, Linha, Coluna, _, _, Linha, Coluna).
+caminho_vazio(Tabuleiro, Linha, Coluna, LinhaDif, ColunaDif, DestLinha, DestColuna) :-
+    LinhaProx is Linha + LinhaDif,
+    ColunaProx is Coluna + ColunaDif,
+    célula_vazia(Tabuleiro, (LinhaProx, ColunaProx)),
+    caminho_vazio(Tabuleiro, LinhaProx, ColunaProx, LinhaDif, ColunaDif, DestLinha, DestColuna).
+% Movimento com captura
+movimento_captura(Tabuleiro, (LinhaAtual, ColunaAtual), (NovaLinha, NovaColuna), NovoTabuleiro) :-
+	% Verifica se a nova posição está dentro do tabuleiro
+between(1, 8, NovaLinha), between(1, 8, NovaColuna),
+% Calcula a posição intermediária (peça adversária)
+LinhaIntermediária is (LinhaAtual + NovaLinha) // 2,
+ColunaIntermediária is (ColunaAtual + NovaColuna) // 2,
+	% Calcula a posição intermediária (peça adversária)
+	LinhaIntermediária is (LinhaAtual + NovaLinha) // 2,
+	ColunaIntermediária is (ColunaAtual + NovaColuna) // 2,
+	% Verifica se há uma peça adversária na posição intermediária
+	nth1(LinhaIntermediária, Tabuleiro, LinhaTab),
+	nth1(ColunaIntermediária, LinhaTab, PeçaAdversária),
+	peça_adversária(Peça, PeçaAdversária),
+	% Verifica se a nova posição está vazia
+	célula_vazia(Tabuleiro, (NovaLinha, NovaColuna)),
+	% Obtém a peça que está se movendo
+	nth1(LinhaAtual, Tabuleiro, LinhaTabAtual),
+	nth1(ColunaAtual, LinhaTabAtual, Peça),
+	% Verifica se a peça deve ser transformada em dama
+	transformar_em_dama((NovaLinha, NovaColuna), Peça, NovaPeça),
+	% Atualiza o tabuleiro
+	substituir_linha(LinhaTabAtual, ColunaAtual, 🟨, NovaLinhaTabAtual),
+	substituir(Tabuleiro, LinhaAtual, NovaLinhaTabAtual, TabuleiroTemp1),
+	nth1(LinhaIntermediária, TabuleiroTemp1, LinhaTabIntermediária),
+	substituir_linha(LinhaTabIntermediária, ColunaIntermediária, 🟨, NovaLinhaTabIntermediária),
+	substituir(TabuleiroTemp1, LinhaIntermediária, NovaLinhaTabIntermediária, TabuleiroTemp2),
+	nth1(NovaLinha, TabuleiroTemp2, LinhaTabNova),
+	substituir_linha(LinhaTabNova, NovaColuna, NovaPeça, NovaLinhaTabNova),
+	substituir(TabuleiroTemp2, NovaLinha, NovaLinhaTabNova, NovoTabuleiro).
+
+% Lê a entrada do jogador
+ler_entrada(Mensagem, (Linha, Coluna)) :-
+	write(Mensagem), nl,
+	write('Linha: '), read(Linha),
+	write('Coluna: '), read(Coluna).
+
+% Loop principal do jogo
+jogar :-
+	inicializa_tabuleiro(Tabuleiro),
+	jogar(Tabuleiro, ⚫). % Começa com as peças pretas
+
+jogar(Tabuleiro, Jogador) :-
+    exibir_tabuleiro(Tabuleiro),
+    write('Vez do jogador: '), write(Jogador), nl,
+    ler_entrada('Escolha a peça para mover (linha, coluna):', (LinhaAtual, ColunaAtual)),
+    ler_entrada('Escolha a posição de destino (linha, coluna):', (NovaLinha, NovaColuna)),
+    (
+        movimento_simples(Tabuleiro, (LinhaAtual, ColunaAtual), (NovaLinha, NovaColuna), NovoTabuleiro) ->
+        ProximoJogador = (Jogador = ⚫ -> ⚪ ; ⚫),
+        jogar(NovoTabuleiro, ProximoJogador)
+    ;
+        movimento_captura(Tabuleiro, (LinhaAtual, ColunaAtual), (NovaLinha, NovaColuna), NovoTabuleiro) ->
+        ProximoJogador = (Jogador = ⚫ -> ⚪ ; ⚫),
+        jogar(NovoTabuleiro, ProximoJogador)
+    ;
+        write('Jogada inválida! Tente novamente.'), nl,
+        jogar(Tabuleiro, Jogador)
+    ).
+
+% Inicia o jogo
+iniciar :-
+	write('Bem-vindo ao Jogo de Damas!'), nl,
+	write('As peças pretas (⚫) começam.'), nl,
+	jogar.
